@@ -1,0 +1,44 @@
+% Parameters
+num_tasks = 10; % Number of tasks
+arrival_rate = 2; % Arrival rate of tasks (tasks per time unit)
+service_time_mean = 3; % Mean service time of tasks
+service_time_std = 1; % Standard deviation of service time of tasks
+max_priority = 5; % Maximum priority level
+% Simulate task arrivals
+interarrival_times = exprnd(1/arrival_rate, 1, num_tasks);
+arrival_times = cumsum(interarrival_times);
+% Simulate task service times
+service_times = normrnd(service_time_mean, service_time_std, 1, num_tasks);
+% Simulate task priorities
+priorities = randi(max_priority, 1, num_tasks);
+% Initialize variables to store completion times and waiting times
+completion_times = zeros(1, num_tasks);
+waiting_times = zeros(1, num_tasks);
+% Initialize simulation clock
+current_time = 0;
+% Run Priority Scheduling algorithm
+for i = 1:num_tasks
+    % Update simulation clock
+    current_time = max(current_time, arrival_times(i));
+    
+    % Find the task with the highest priority among arrived tasks
+    arrived_tasks_indices = find(arrival_times <= current_time);
+    [~, idx] = min(priorities(arrived_tasks_indices));
+    next_task_index = arrived_tasks_indices(idx);
+    
+    % Update completion time for the task
+    completion_times(next_task_index) = current_time + service_times(next_task_index);
+    
+    % Calculate waiting time for the task
+    waiting_times(next_task_index) = current_time - arrival_times(next_task_index);
+    
+    % Move simulation clock to the completion time of the task
+    current_time = completion_times(next_task_index);
+    
+    % Set the service time of the completed task to infinity
+    service_times(next_task_index) = Inf;
+end
+% Calculate average waiting time
+average_waiting_time = mean(waiting_times);
+% Display results
+disp(['Average Waiting Time (Priority Scheduling): ', num2str(average_waiting_time)]);
